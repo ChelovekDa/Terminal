@@ -1,8 +1,6 @@
-from backend.gate import Gate
+from backend.funcs.generate_play_space import Generate
 
-Gate().stack().controller({"bb":"aa"})
-Gate().stack().controller({"hh":"dd"})
-
+LEVEL = Generate().generate()
 
 
 

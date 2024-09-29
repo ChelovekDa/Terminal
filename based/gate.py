@@ -1,6 +1,7 @@
+import io
 import os
 from getpass import getuser
-from datetime import datetime
+import datetime
 
 class Gate():
     """
@@ -63,7 +64,7 @@ class Gate():
 
         def get_stack(self) -> dict:
             res = {}
-            f = open("backend/stack", "r", encoding="UTF-8")
+            f = open("based/stack", "r", encoding="UTF-8")
             file = f.readlines()
             f.close()
             for line in file:
@@ -72,7 +73,6 @@ class Gate():
                 sp = line.split(self.__get_stack_spliter())
                 if (len(sp) == 2):
                     res[sp[0]] = sp[1]
-            Logger().log(f"Stack returned: {res}")
             return res
 
         def clear(self, password) -> None:
@@ -83,42 +83,48 @@ class Gate():
                 Logger().log(f"Stack has not been cleared because password is not correctly. {password}/{self.__get_stack_cleared_password()}")
                 return None
 
-    class visible():
-
-        def get_base_bg(self) -> str:
-            return "black"
-
-        def get_base_button_color(self) -> str:
-            return "white"
-
     def get_base_directory(self) -> str:
-        return f"{os.environ['SYSTEMDRIVE']}\\Users\\{getuser()}\\AppData\\Roaming\\HCC\\Terminal"
+        return f"{os.environ['SYSTEMDRIVE']}/Users/{getuser()}/AppData/Roaming/HCC"
 
     class hub():
-        ...
 
+        def register(self, command) -> None:
+            Logger().log(f"Register new command action. Command line: {command}")
 
 
 class Logger():
 
     def __new_log_name(self) -> str:
-        return f"{Gate().get_base_directory()}\\logs\\{datetime.year}-{datetime.month}-{datetime.day}-{datetime.hour}-{datetime.minute}-{datetime.second}"
+        return f"{Gate().get_base_directory()}/Terminal/logs/{str(datetime.datetime.now().year)}-{str(datetime.datetime.now().month)}-{str(datetime.datetime.now().day)}-{str(datetime.datetime.now().hour)}-{str(datetime.datetime.now().minute)}-{str(datetime.datetime.now().second)}"
 
     def log(self, message: str):
-        global file
+        self.createLogDir()
         if (Gate().stack().get_stack().get("log_name") != "None" or None):
+            file = None
             try:
                 file = open(Gate().stack().get_stack().get("log_name"), "w+", encoding="UTF-8")
-                file.write((f"[{datetime.hour}:{datetime.minute}:{datetime.second}] {message}"))
+                file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}"))
             except:
                 file = open(self.__new_log_name(), "w+", encoding="UTF-8")
-                file.write((f"[{datetime.hour}:{datetime.minute}:{datetime.second}] {message}"))
+                file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}"))
             finally:
-                file.close()
+                if (isinstance(file, io.TextIOWrapper)):
+                    file.close()
+                else:
+                    return None
         else:
             file = open(self.__new_log_name(), "w+", encoding="UTF-8")
-            file.write((f"[{datetime.hour}:{datetime.minute}:{datetime.second}] {message}"))
+            file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}"))
             file.close()
+
+    def createLogDir(self) -> bool:
+        if (os.path.exists(f"{Gate().get_base_directory()}/Terminal/logs")):
+            return True
+        else:
+            os.mkdir(Gate().get_base_directory())
+            os.mkdir(f"{Gate().get_base_directory()}/Terminal")
+            os.mkdir(f"{Gate().get_base_directory()}/Terminal/logs")
+            return True
 
 
 
