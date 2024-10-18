@@ -28,6 +28,9 @@ class Gate():
             This private func for other classes and funcs inside app."""
             return "602"
 
+        def __get_based_stack_path(self) -> str:
+            return "based/stack.txt"
+
         def controller(self, data):
             """
             This func needs to manage the stack file and write new lines in his.
@@ -35,7 +38,11 @@ class Gate():
             """
             stack = None
             try:
-                stack = open("backend/stack", "w+", encoding="UTF-8")
+                stak = self.get_stack()
+                open(self.__get_based_stack_path(), "w").close()
+                stack = open(self.__get_based_stack_path(), "w", encoding="UTF-8")
+                for key in stak.keys():
+                    stack.write((f"{key}{self.__get_stack_spliter()}{stak.get(key)}\n"))
                 if (type(data) == list):
                     data = list(data)
                     for item in data:
@@ -46,25 +53,27 @@ class Gate():
                                 stack.write((f"{data[0]}{self.__get_stack_spliter()}{data[1]}"))
                                 break
                 elif (type(data) == str):
-                    if (str(data).find(self.__get_stack_spliter()) == -1):
-                        stack.write((f" {self.__get_stack_spliter()}{str(data)}"))
+                    data = str(data)
+                    if (data.find(self.__get_stack_spliter()) == -1):
+                        stack.write((f" {self.__get_stack_spliter()}{data}"))
                     else:
-                        stack.write((str(data)))
+                        stack.write((data))
                 elif (type(data) == dict):
                     data = dict(data)
                     for key in data.keys():
                         stack.write((f"{key}{self.__get_stack_spliter()}{data.get(key)}"))
+                stack.close()
+                return None
             except:
                 try:
                     Logger().log(f"Cannot open or write the data in stack. Stack: {self.get_stack()}.\ndata: {data}")
+                    stack.close()
                 except:
                     Logger().log(f"Cannot open or write the data in stack, and \"Gate\" can't open the stack file. \ndata: {data}")
-            finally:
-                stack.close()
 
         def get_stack(self) -> dict:
             res = {}
-            f = open("based/stack", "r", encoding="UTF-8")
+            f = open(self.__get_based_stack_path(), "r", encoding="UTF-8")
             file = f.readlines()
             f.close()
             for line in file:
@@ -77,8 +86,8 @@ class Gate():
 
         def clear(self, password) -> None:
             if (str(password) == self.__get_stack_cleared_password()):
-                open("backend/stack", "w+").close()
                 Logger().log(f"Stack is being cleared!")
+                open("based/stack.txt", "w+").close()
             else:
                 Logger().log(f"Stack has not been cleared because password is not correctly. {password}/{self.__get_stack_cleared_password()}")
                 return None
@@ -97,24 +106,49 @@ class Logger():
     def __new_log_name(self) -> str:
         return f"{Gate().get_base_directory()}/Terminal/logs/{str(datetime.datetime.now().year)}-{str(datetime.datetime.now().month)}-{str(datetime.datetime.now().day)}-{str(datetime.datetime.now().hour)}-{str(datetime.datetime.now().minute)}-{str(datetime.datetime.now().second)}"
 
+    def __read_log(self) -> list[str]:
+        file_name = Gate().stack().get_stack().get("log_name")
+        if (file_name != "None" or None):
+            try:
+                return open(file_name, "r", encoding="UTF-8").readlines()
+            except:
+                return []
+        else:
+            return []
+
     def log(self, message: str):
         self.createLogDir()
-        if (Gate().stack().get_stack().get("log_name") != "None" or None):
+        stack = Gate().stack().get_stack()
+        if (stack.get("log_name") != "None" or None):
+            latest = self.__read_log()
             file = None
             try:
                 file = open(Gate().stack().get_stack().get("log_name"), "w+", encoding="UTF-8")
-                file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}"))
+                for line in latest:
+                    file.write((line))
+                file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}\n"))
             except:
-                file = open(self.__new_log_name(), "w+", encoding="UTF-8")
-                file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}"))
+                name = self.__new_log_name()
+                file = open(name, "w+", encoding="UTF-8")
+                file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}\n"))
+                try:
+                    Gate().stack().controller({"log_name": name})
+                except:
+                    if (isinstance(file, io.TextIOWrapper)):
+                        file.close()
+                        return None
+                    else:
+                        return None
             finally:
                 if (isinstance(file, io.TextIOWrapper)):
                     file.close()
                 else:
                     return None
         else:
-            file = open(self.__new_log_name(), "w+", encoding="UTF-8")
-            file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}"))
+            name = self.__new_log_name()
+            Gate().stack().controller({"log_name": name})
+            file = open(name, "w+", encoding="UTF-8")
+            file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}\n"))
             file.close()
 
     def createLogDir(self) -> bool:

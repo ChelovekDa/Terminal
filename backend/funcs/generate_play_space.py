@@ -1,7 +1,6 @@
 import os
 import random
 import json
-from os.path import exists
 from os import path
 import datetime
 
@@ -68,10 +67,13 @@ class _Level():
             name = self.__gen_name()
         self.name = name
 
+    def get_names(self) -> list[str]:
+        return names
+
     def append(self, obj: _Building):
         self.buildings.append(obj)
 
-    def __str(self) -> dict:
+    def str(self) -> dict:
         dic = {}
         level = self
         for i, building in enumerate(level.buildings):
@@ -92,10 +94,11 @@ class _Level():
         return dic
 
     def _to_json(self):
-        dic = self.__str()
+        dic = self.str()
 
         direc = f"{Gate().get_base_directory()}/Terminal/Levels"
         if (path.exists(direc)):
+            open(f"{direc}/{self.name}.json", "w").close()
             with open(f"{direc}/{self.name}.json", "w") as write_file:
                 json.dump(dic, write_file)
         else:
@@ -107,7 +110,6 @@ class _Level():
         with open(f"backend/preFiles/app/activate.json", "w") as write_file:
             json.dump(dic, write_file)
         Logger().log(f"Was been saved a new level without keys set. Site: {self.name}")
-        self._set_keys()
 
     def _set_keys(self):
         data = {}
@@ -284,6 +286,7 @@ class Generate():
                 build.append(floor)
             level.append(build)
         level._to_json()
+        level._set_keys()
         return level
 
     def __init__(self):

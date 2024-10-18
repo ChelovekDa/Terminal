@@ -25,7 +25,7 @@ class color():
         def get_based_text_color(self) -> str:
             return "limegreen"
 
-    def __init__(self, color: str):
+    def __init__(self, color: str = ""):
         self.color = color
         self.__check()
 
