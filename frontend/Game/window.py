@@ -1,42 +1,9 @@
-import time
 import tkinter
 from tkinter import ttk
-from random import randint
-import threading
-import ray
 
-from based.Color import color
-from based.gate import Logger
-
-@ray.remote
-def printed(entry: str):
-    while True:
-        print(f"printed: " + entry)
-        time.sleep(3)
-
-class based_values():
-
-    def get_base_title(self) -> str:
-        return "T E R M I N A L"
-
-    def get_base_sizes(self) -> list[int]:
-        return [1200, 700]
-
-    def get_base_bg_color(self) -> str:
-        return color().based_colors().get_base_bg()
-
-    def get_base_terminal_message(self) -> list[str]:
-        f = open("backend/preFiles/app/terminal_base_message", "r")
-        message = []
-        for line in f.readlines():
-            line = line.replace("\n", "")
-            if ("{number}" in line):
-                line = line.replace("{number}", str(randint(1111111111, 9999999999)))
-            elif ("{name}" in line):
-                line = line.replace("{name}", "$USER5$-G")
-            line = "  " + line
-            message.append(line)
-        return message
+import based
+import based.Color
+from based.based_values import values
 
 class Tk():
     ROOT = tkinter.Tk
@@ -49,6 +16,7 @@ class Tk():
         self.sizes = sizes
         self.listbox = tkinter.Listbox
         self.entry = tkinter.Text
+        self.Logger = based.gate.Logger()
 
     def __strippers(self, arg: list[str]) -> tkinter.StringVar:
         for i in range(14):
@@ -59,7 +27,7 @@ class Tk():
         try:
             return int(str)
         except:
-            Logger().log(f"The size of window is not int. The window will be made to square form. Arg: \"{str}\"")
+            self.Logger.log(f"The size of window is not int. The window will be made to square form. Arg: \"{str}\"")
             return 600
 
     def get_root(self) -> tkinter.Tk:
@@ -76,20 +44,20 @@ class Tk():
         #chartreuse3
         #mediumseagreen
 
-        #self.listbox = tkinter.Listbox(listvariable=self.__strippers(based_values().get_base_terminal_message()), background=self.background, font=("Better VCR", 12), foreground="springgreen3", activestyle="none")
-        self.listbox = tkinter.Listbox(listvariable=self.__strippers(data), background=self.background, font=("Better VCR", 12), foreground="springgreen3", activestyle="none")
+        self.listbox = tkinter.Listbox(listvariable=self.__strippers(values().get_base_terminal_message()), background=self.background, font=("Better VCR", 12), foreground="springgreen3", activestyle="none")
+        #self.listbox = tkinter.Listbox(listvariable=self.__strippers(data), background=self.background, font=("Better VCR", 12), foreground="springgreen3", activestyle="none")
         self.listbox.bind("<<ListboxSelect>>", lambda x: self.listbox.selection_clear(0, tkinter.END))
         self.listbox.pack(side="left", fill="both", expand=1)
         scrollbar = ttk.Scrollbar(orient="vertical", command=self.listbox.yview)
         scrollbar.pack(side="right", fill="y")
         self.listbox["yscrollcommand"] = scrollbar.set
 
-        self.entry = tkinter.Text(relief="sunken", background=self.background, foreground="springgreen3", font=("Better VCR", 12), width=98, height=12)
+        self.entry = tkinter.Text(relief="sunken", background=self.background, foreground="springgreen3", font=("Better VCR", 12), width=98, height=12, cursor="pencil")
+
         #self.entry.pack(side="left", fill="both", expand=1)
         self.entry.place(x=1, y=502)
 
-        #ray.get([printed.remote(str(self.entry.get("1.0", tkinter.END)))])
-
         ROOT = root
         return root
+
 

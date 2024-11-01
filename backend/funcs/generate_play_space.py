@@ -4,7 +4,7 @@ import json
 from os import path
 import datetime
 
-from based.gate import Gate, Logger
+import based
 
 names = []
 
@@ -13,12 +13,20 @@ class _based():
     def __init__(self, clazz):
         self.clazz = clazz
 
-class _Items():
+class Items():
 
     def __iter__(self) -> list[str]:
+        """Return this list of items in room but in list[str] view."""
         lis = []
         for i in range(len(self.items)):
-            lis.append(_Item().str(self.items[i]))
+            lis.append(Item().str(self.items[i]))
+        return lis
+
+    def __liter__(self) -> list[str]:
+        """Return this list of items in room but in list[str] view, where everyone from elements in lower register."""
+        lis = []
+        for i in range(len(self.items)):
+            lis.append(Item().str(self.items[i]).lower())
         return lis
 
     def __init__(self, items: list[_based]):
@@ -30,9 +38,9 @@ class _Items():
     def remove(self, obj: _based):
         self.items.remove(obj)
 
-class _Room():
+class Room():
 
-    def __init__(self, items: _Items([]) = _Items([]), name = "", blocked = False):
+    def __init__(self, items: Items([]) = Items([]), name = "", blocked = False):
         self.items = items
         self.name = name
         self.blocked = blocked
@@ -40,37 +48,39 @@ class _Room():
     def set_name(self, name: str):
         self.name = name
 
-class _Floor():
+class Floor():
 
-    def __init__(self, rooms: list[_Room]):
+    def __init__(self, rooms: list[Room]):
         self.rooms = rooms
 
-    def append(self, obj: _Room):
+    def append(self, obj: Room):
         self.rooms.append(obj)
 
-class _Building():
+class Building():
 
-    def __init__(self, floors: list[_Floor]):
+    def __init__(self, floors: list[Floor]):
         self.floors = floors
 
-    def append(self, obj: _Floor):
+    def append(self, obj: Floor):
         self.floors.append(obj)
 
-class _Level():
+class Level():
 
     def __gen_name(self) -> str:
         return f"NewWorld-{str(datetime.datetime.now().year)}-{str(datetime.datetime.now().month)}-{str(datetime.datetime.now().day)}-{str(datetime.datetime.now().hour)}-{str(datetime.datetime.now().minute)}-{str(datetime.datetime.now().second)}"
 
-    def __init__(self, buildings: list[_Building], name: str = ""):
+    def __init__(self, buildings: list[Building], name: str = ""):
         self.buildings = buildings
         if (name == ""):
             name = self.__gen_name()
         self.name = name
+        self.Logger = based.gate.Logger()
+        self.Gate = based.gate.Gate()
 
     def get_names(self) -> list[str]:
         return names
 
-    def append(self, obj: _Building):
+    def append(self, obj: Building):
         self.buildings.append(obj)
 
     def str(self) -> dict:
@@ -96,7 +106,7 @@ class _Level():
     def _to_json(self):
         dic = self.str()
 
-        direc = f"{Gate().get_base_directory()}/Terminal/Levels"
+        direc = f"{self.Gate.get_base_directory()}/Terminal/Levels"
         if (path.exists(direc)):
             open(f"{direc}/{self.name}.json", "w").close()
             with open(f"{direc}/{self.name}.json", "w") as write_file:
@@ -109,7 +119,7 @@ class _Level():
         open(f"backend/preFiles/app/activate.json", "w").close()
         with open(f"backend/preFiles/app/activate.json", "w") as write_file:
             json.dump(dic, write_file)
-        Logger().log(f"Was been saved a new level without keys set. Site: {self.name}")
+        self.Logger.log(f"Was been saved a new level without keys set. Site: {self.name}")
 
     def _set_keys(self):
         data = {}
@@ -148,12 +158,12 @@ class _Level():
         open(f"backend/preFiles/app/activate.json", "w").close()
         with open(f"backend/preFiles/app/activate.json", "w") as write_file:
             json.dump(data, write_file)
-        Logger().log(f"Was been saved a new level with key set and lock rooms. Site: {self.name}")
+        self.Logger.log(f"Was been saved a new level with key set and lock rooms. Site: {self.name}")
 
-class _Item():
+class Item():
 
     class Key(_based):
-        def __init__(self, room: _Room = _Room(), code: int = 0):
+        def __init__(self, room: Room = Room(), code: int = 0):
             super().__init__(self)
             self.backRoom = room
             self.code = code
@@ -238,6 +248,9 @@ class _Item():
     def get_random_item(self) -> _based:
         return self.__get_catalogue().get(random.choice(list(self.__get_catalogue().keys())))
 
+    def get_list_items(self) -> list[str]:
+        return list(dict(self.__get_catalogue()).keys())
+
 class Generate():
 
     def __generate_room_name(self) -> str:
@@ -250,10 +263,10 @@ class Generate():
         else:
             return self.__generate_room_name()
 
-    def __generate_items(self, count: int) -> _Items:
-        items = _Items([])
+    def __generate_items(self, count: int) -> Items:
+        items = Items([])
         for i in range(count):
-            items.append(_Item().get_random_item())
+            items.append(Item().get_random_item())
         return items
 
     def __generate_new_seed(self) -> str:
@@ -263,23 +276,23 @@ class Generate():
         seed = seed + (str(random.randint(3, 5))) # rooms
         return seed
 
-    def generate(self) -> _Level:
+    def generate(self) -> Level:
         """
         Main func for return already completed level.
         :return: Level
         """
-        level = _Level([])
+        level = Level([])
         for buildings in range(int(self.seed[0])):
-            build = _Building([])
+            build = Building([])
             for floors in range(int(self.seed[1])):
-                floor = _Floor([])
+                floor = Floor([])
                 for rooms in range(int(self.seed[2])):
                     if (random.randint(0, 9) in [2, 5, 9, 1]):
-                        room = _Room(
+                        room = Room(
                             self.__generate_items(random.randint(0, 2)),
                             self.__generate_room_name())
                     else:
-                        room = _Room(
+                        room = Room(
                             [],
                             self.__generate_room_name())
                     floor.append(room)
@@ -291,5 +304,8 @@ class Generate():
 
     def __init__(self):
         self.seed = self.__generate_new_seed()
+        self.Logger = based.gate.Logger()
+        self.Gate = based.gate.Gate()
+
 
 
