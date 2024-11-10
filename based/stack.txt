@@ -1,0 +1,1 @@
+log_name/*/=C:/Users/mixaf/AppData/Roaming/HCC/Terminal/logs/2024-11-10-19-31-36

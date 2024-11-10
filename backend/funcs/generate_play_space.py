@@ -5,6 +5,8 @@ from os import path
 import datetime
 
 import based
+from based.Logger import stack
+from based.based_values import values
 
 names = []
 
@@ -13,9 +15,12 @@ class _based():
     def __init__(self, clazz):
         self.clazz = clazz
 
+    def __str__(self) -> str:
+        return ""
+
 class Items():
 
-    def __iter__(self) -> list[str]:
+    def __iter__(self) -> list:
         """Return this list of items in room but in list[str] view."""
         lis = []
         for i in range(len(self.items)):
@@ -30,7 +35,22 @@ class Items():
         return lis
 
     def __init__(self, items: list[_based]):
-        self.items = items
+        self.items = list(items)
+
+    def __getitem__(self, index) -> _based:
+        for i, item in enumerate(self.items):
+            if i == index:
+                return item
+        return None
+
+    def __len__(self) -> int:
+        """Return the length of self.items list"""
+        item = _based(None)
+        i = 0
+        for item in self.items:
+            i+=1
+        del item
+        return i
 
     def append(self, obj: _based):
         self.items.append(obj)
@@ -66,13 +86,13 @@ class Building():
 
 class Level():
 
-    def __gen_name(self) -> str:
+    def gen_name(self) -> str:
         return f"NewWorld-{str(datetime.datetime.now().year)}-{str(datetime.datetime.now().month)}-{str(datetime.datetime.now().day)}-{str(datetime.datetime.now().hour)}-{str(datetime.datetime.now().minute)}-{str(datetime.datetime.now().second)}"
 
     def __init__(self, buildings: list[Building], name: str = ""):
         self.buildings = buildings
         if (name == ""):
-            name = self.__gen_name()
+            name = self.gen_name()
         self.name = name
         self.Logger = based.gate.Logger()
         self.Gate = based.gate.Gate()
@@ -94,19 +114,31 @@ class Level():
                     room_dict = {}
                     room_dict["name"] = room.name
                     room_dict["blocked"] = room.blocked
-                    items = []
-                    for item in room.items.__iter__():
-                        items.append(item)
-                    room_dict["items"] = items
+                    if (room.items.__len__() != 0):
+                        items = []
+                        for i in range(room.items.__len__()):
+                            obj = room.items.__getitem__(i)
+                            if (type(obj) == type(Item().Document())):
+                                items.append({
+                                    Item().str(obj): {"type": Item().str(obj), "information": obj.info, "name": obj.name, "important": obj.important}
+                                })
+                            else:
+                                items.append({
+                                    Item().str(obj): {"type": Item().str(obj)}
+                                })
+                        room_dict["items"] = items
+                    else:
+                        room_dict["items"] = []
                     fl[room.name] = room_dict
                 build[str(k)] = dict(fl)
             dic[str(i)] = dict(build)
         return dic
 
-    def _to_json(self):
-        dic = self.str()
+    def to_json(self, dic: dict = None):
+        if (dic == None):
+            dic = self.str()
 
-        direc = f"{self.Gate.get_base_directory()}/Terminal/Levels"
+        direc = f"{values().get_base_directory()}/Terminal/Levels"
         if (path.exists(direc)):
             open(f"{direc}/{self.name}.json", "w").close()
             with open(f"{direc}/{self.name}.json", "w") as write_file:
@@ -131,7 +163,9 @@ class Level():
                     floor_dict = dict(build_dict.get(floor))
                     for room in floor_dict.keys():
                         room_dict = dict(floor_dict.get(room))
-                        count += list(room_dict.get("items")).count("Key")
+                        for item in list(room_dict.get("items")):
+                            if (dict(item).get("Key") != None):
+                                count+=1
                         if (count == 0):
                             continue
                         else:
@@ -163,10 +197,9 @@ class Level():
 class Item():
 
     class Key(_based):
-        def __init__(self, room: Room = Room(), code: int = 0):
+        def __init__(self, room: Room = Room()):
             super().__init__(self)
             self.backRoom = room
-            self.code = code
 
     class Lockpick(_based):
 
@@ -180,10 +213,11 @@ class Item():
                 return False
 
     class Document(_based):
-        def __init__(self, information: str = "", name = ""):
+        def __init__(self, information: str = "", name = "", important: bool = False):
             super().__init__(self)
             self.info = information
             self.name = name
+            self.important = important
 
     class Paper(_based):
         def __init__(self):
@@ -194,7 +228,6 @@ class Item():
     class Poop(_based):
         def __init__(self):
             super().__init__(self)
-
         def sound(self) -> str:
             return "poop"
     class Stair(_based):
@@ -263,6 +296,16 @@ class Generate():
         else:
             return self.__generate_room_name()
 
+    def __generate_room_name_for_HARD(self) -> str:
+        global names
+        name = random.choice("QWERTYUIOPASDFGHJKLZXCVBNM")
+        name = name + (str(random.randint(1, 99)))
+        if (name not in names):
+            names.append(name)
+            return name
+        else:
+            return self.__generate_room_name_for_HARD()
+
     def __generate_items(self, count: int) -> Items:
         items = Items([])
         for i in range(count):
@@ -271,9 +314,21 @@ class Generate():
 
     def __generate_new_seed(self) -> str:
         seed = ""
-        seed = seed + (str(random.randint(1, 5))) # buildings
-        seed = seed + (str(random.randint(1, 9))) # floors
-        seed = seed + (str(random.randint(3, 5))) # rooms
+        if (self.dif == 1):
+            seed = seed + (str(random.randint(1, 2))) # buildings
+            seed = seed + (str(random.randint(1, 5))) # floors
+            seed = seed + (str(random.randint(3, 7))) # rooms
+        elif (self.dif == 2):
+            seed = seed + (str(random.randint(2, 5)))  # buildings
+            seed = seed + (str(random.randint(4, 9)))  # floors
+            seed = seed + (str(random.randint(3, 5)))  # rooms
+        elif(self.dif == 3):
+            seed = seed + (str(random.randint(5, 10)))  # buildings
+            seed = seed + (str(random.randint(9, 18)))  # floors
+            seed = seed + (str(random.randint(5, 10)))  # rooms
+        else:
+            self.dif = 2
+            seed = self.__generate_new_seed()
         return seed
 
     def generate(self) -> Level:
@@ -281,31 +336,53 @@ class Generate():
         Main func for return already completed level.
         :return: Level
         """
-        level = Level([])
+        level = Level
+        if (self.name != ""):
+            level = Level([], name=self.name)
+        else:
+            level = Level([])
         for buildings in range(int(self.seed[0])):
             build = Building([])
             for floors in range(int(self.seed[1])):
                 floor = Floor([])
                 for rooms in range(int(self.seed[2])):
                     if (random.randint(0, 9) in [2, 5, 9, 1]):
-                        room = Room(
-                            self.__generate_items(random.randint(0, 2)),
-                            self.__generate_room_name())
+                        if (self.dif == 3):
+                            if (random.randint(1, 99) in [10, 26, 83, 16, 93, 27, 83, 41]):
+                                room = Room(
+                                    self.__generate_items(5),
+                                    self.__generate_room_name_for_HARD())
+                            else:
+                                room = Room(
+                                    self.__generate_items(random.randint(1, 3)),
+                                    self.__generate_room_name_for_HARD())
+                        else:
+                            room = Room(
+                                self.__generate_items(random.randint(0, 2)),
+                                self.__generate_room_name())
                     else:
-                        room = Room(
-                            [],
-                            self.__generate_room_name())
+                        if (self.dif == 3):
+                            room = Room(
+                                [],
+                                self.__generate_room_name_for_HARD())
+                        else:
+                            room = Room(
+                                [],
+                                self.__generate_room_name())
                     floor.append(room)
                 build.append(floor)
             level.append(build)
-        level._to_json()
+        level.to_json()
         level._set_keys()
+        stack().controller({values().get_base_level_name_stack_cont(): level.name})
         return level
 
-    def __init__(self):
+    def __init__(self, difficulty: int = 2, name: str = ""):
+        self.dif = difficulty
         self.seed = self.__generate_new_seed()
         self.Logger = based.gate.Logger()
         self.Gate = based.gate.Gate()
+        self.name = name
 
 
 

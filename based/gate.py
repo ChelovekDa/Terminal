@@ -1,9 +1,10 @@
-import io
+import time
 import tkinter
-from getpass import getuser
 import os
-import datetime
+import requests
+import json
 
+import frontend.Game.window
 from backend.commands.basedCommand import based
 from backend.commands.ping import ping
 from backend.commands.use import use
@@ -11,9 +12,15 @@ from backend.commands.clear import clear
 from backend.commands.list import list as lst
 from backend.commands.commandLine import line
 
+from backend.ve_commands.ve_gate import ve_gate
+from backend.ve_commands.help import help
+from backend.ve_commands.create import create
+from backend.ve_commands.start import start
+
 from frontend.Game.window import Tk
-from backend.funcs.generate_play_space import Level as Level
+from backend.funcs.generate_play_space import Level as Level, Building, Floor, Room, names
 from based.based_values import values
+from based.Logger import Logger, stack
 
 class Gate():
     """
@@ -30,6 +37,7 @@ class Gate():
         """
         Subclasses:
         * cmd() - class for manage terminal's entry and printed text on terminal screen.
+        * VE() - class for manage terminal's menu
         """
 
         LEVEL = Level
@@ -65,6 +73,8 @@ class Gate():
 
             def __get_command_catalogue(self) -> dict[str, based]:
                 catalogue = {
+                    "ve": ve_gate(),
+                    "VE": ve_gate(),
                     "ping": ping(),
                     "use": use(),
                     "c": clear(),
@@ -72,7 +82,7 @@ class Gate():
                 }
                 return catalogue
 
-            def __convert(self, command_arg: str) -> list[str]:
+            def _convert(self, command_arg: str) -> list[str]:
                 lst = []
                 bases = ["\n\n\n\n\n\n\n\n\n\n", "\n\n\n\n\n\n\n\n\n", "\n\n\n\n\n\n\n\n", "\n\n\n\n\n\n\n", "\n\n\n\n\n\n", "\n\n\n\n\n", "\n\n\n\n", "\n\n\n", "\n\n", "\n"]
                 if (command_arg.count("\n") > 0):
@@ -95,162 +105,154 @@ class Gate():
                 command - this parameter contains a list with all command lines that user entered.
                 """
 
-                command = self.__convert(str(self.root.entry.get("1.0", tkinter.END)))
+                das = str(self.root.entry.get("1.0", tkinter.END))
+                self.update_terminal_text([f"{das}"])
+                command = self._convert(das)
+                del das
 
+                username = values().get_base_terminal_system_username()
                 if (self.__get_command_catalogue().get(command[0]) == None):
-                    self.update_terminal_text(["This command wasn't be applied! This command is not to be found.", ""])
+                    self.update_terminal_text(["This command wasn't be applied! This command is not to be found.", ""], username=username)
                     Logger().log(f"Command <{str(command)}> is not be found.")
                 else:
                     if (len(command) >= 2 and command[1] != ""):
-                        self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)))
+                        self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username=username)
+                        Logger().log(f"Was been applied command <{str(command)}>")
+                    elif (len(command) == 1 and command[1] == "" or " " and command[1] == "VE" or "ve"):
+                        self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username=username)
                         Logger().log(f"Was been applied command <{str(command)}>")
                     else:
                         Logger().log(f"Command <{str(command)}> cant be applied.")
-                        self.update_terminal_text(["This command cant be applied because text length less than need."])
+                        self.update_terminal_text(["This command cant be applied because text length less than need."], username=username)
 
-    class stack():
-        """
-        This class needs to use and manage the stack.
-        """
+        class VE(cmd):
 
-        def __get_stack_cleared_password(self) -> str:
-            """Return the password, that need to clear the stack file.
-            This private func for other classes and funcs inside app."""
-            return "602"
+            def __init__(self, terminal_root: Tk):
+                super().__init__(terminal_root)
 
-        def __get_based_stack_path(self) -> str:
-            return "based/stack.txt"
+            def __convert(self, command_arg: str) -> list[str]:
+                return super()._convert(command_arg)
 
-        def controller(self, data):
-            """
-            This func needs to manage the stack file and write new lines in his.
-            This private func for other classes and funcs inside app.
-            """
-            stack = None
-            spliter = values().get_stack_spliter()
-            try:
-                stak = self.get_stack()
-                open(self.__get_based_stack_path(), "w").close()
-                stack = open(self.__get_based_stack_path(), "w", encoding="UTF-8")
-                for key in stak.keys():
-                    stack.write((f"{key}{spliter}{stak.get(key)}\n"))
-                if (type(data) == list):
-                    data = list(data)
-                    for item in data:
-                        if (type(item) == list):
-                            stack.write((f"{item[0]}{spliter}{item[1]}"))
-                        else:
-                            if (len(data) == 2):
-                                stack.write((f"{data[0]}{spliter}{data[1]}"))
-                                break
-                elif (type(data) == str):
-                    data = str(data)
-                    if (data.find(values().get_stack_spliter()) == -1):
-                        stack.write((f" {spliter}{data}"))
+            def __get_command_catalogue(self) -> dict[str, based]:
+                catalogue = {
+                    "help": help(),
+                    "create": create(),
+                    "clear": clear(),
+                    "start": start()
+                }
+                return catalogue
+                
+            def activate_command(self):
+                """
+                For more details see parent func.
+                """
+
+                das = str(self.root.entry.get("1.0", tkinter.END))
+                self.update_terminal_text([f"{das}"])
+                command = self.__convert(das)
+                del das
+
+                username = values().get_base_terminal_system_username()
+                if (self.__get_command_catalogue().get(command[0]) == None):
+                    self.update_terminal_text(["This command wasn't be applied! This command is not to be found.", ""],
+                                              username=username)
+                    Logger().log(f"Command <{str(command)}> is not be found.")
+                else:
+                    if (len(command) >= 1):
+                        self.update_terminal_text(
+                            self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)),
+                            username=username)
+                        Logger().log(f"Was been applied command <{str(command)}>")
                     else:
-                        stack.write((data))
-                elif (type(data) == dict):
-                    data = dict(data)
-                    for key in data.keys():
-                        stack.write((f"{key}{spliter}{data.get(key)}"))
-                stack.close()
-                return None
-            except:
-                try:
-                    Logger().log(f"Cannot open or write the data in stack. Stack: {self.get_stack()}.\ndata: {data}")
-                    stack.close()
-                except:
-                    Logger().log(f"Cannot open or write the data in stack, and \"Gate\" can't open the stack file. \ndata: {data}")
-
-        def get_stack(self) -> dict:
-            res = {}
-            f = open(self.__get_based_stack_path(), "r", encoding="UTF-8")
-            file = f.readlines()
-            f.close()
-            for line in file:
-                if "\n" in line:
-                    line = line.replace("\n", "")
-                sp = line.split(values().get_stack_spliter())
-                if (len(sp) == 2):
-                    res[sp[0]] = sp[1]
-            return res
-
-        def clear(self, password) -> bool:
-            if (str(password) == self.__get_stack_cleared_password()):
-                Logger().log(f"Stack is being cleared!")
-                open("based/stack.txt", "w+").close()
-                return True
-            else:
-                Logger().log(f"Stack has not been cleared because password is not correctly. {password}/{self.__get_stack_cleared_password()}")
-                return False
-
-    def get_base_directory(self) -> str:
-        return f"{os.environ['SYSTEMDRIVE']}/Users/{getuser()}/AppData/Roaming/HCC"
+                        Logger().log(f"Command <{str(command)}> cant be applied.")
+                        self.update_terminal_text(["This command cant be applied because text length less than need."],
+                                                  username=username)
 
     def clear(self, password: str) -> None:
         """This function need to clear all program files."""
-        if (self.stack().clear(password)):
+        if (stack().clear(password)):
             open("backend/prefiles/app/activate.json", "w+").close()
         return None
 
-class Logger():
+    def counter(self):
+        count = 0
+        while True:
+            count+=1
+            stack().controller({values().get_base_game_time_stack(): count})
+            time.sleep(1)
 
-    def __new_log_name(self) -> str:
-        return f"{Gate().get_base_directory()}/Terminal/logs/{str(datetime.datetime.now().year)}-{str(datetime.datetime.now().month)}-{str(datetime.datetime.now().day)}-{str(datetime.datetime.now().hour)}-{str(datetime.datetime.now().minute)}-{str(datetime.datetime.now().second)}"
+    def get_level(self) -> Level:
+        with open("backend/preFiles/app/activate.json", "r") as read_file:
+            data = json.load(read_file)
+        data = dict(data)
+        level = Level([])
+        for build_key in data.keys():
+            build = dict(data.get(build_key))
+            building = Building([])
+            for fl_key in build.keys():
+                fl = dict(build.get(fl_key))
+                floor = Floor([])
+                for room in fl.values():
+                    floor.append(Room(items=dict(room).get("items"), name=dict(room).get("name"), blocked=dict(room).get("blocked")))
+                building.append(floor)
+            level.append(building)
+        return level
 
-    def __read_log(self) -> list[str]:
-        file_name = Gate().stack().get_stack().get("log_name")
-        if (file_name != "None" or None):
+    def save_level(self) -> None:
+        name = stack().get_stack().get(values().get_base_level_name_stack_cont())
+        path = f"{values().get_base_directory()}/Terminal/Levels/{stack().get_stack().get(values().get_base_level_name_stack_cont())}.json"
+        if (name != None and os.path.exists(f"{values().get_base_directory()}/Terminal/Levels/{name}.json")):
             try:
-                return open(file_name, "r", encoding="UTF-8").readlines()
+                del name
+                open(path, "w+").close()
+                with open("backend/preFiles/app/activate.json", "r") as read_file:
+                    data = json.load(read_file)
+                data = dict(data)
+                with open(path, "w") as write_file:
+                    json.dump(data, write_file)
+                Logger().log(f"Success save active level from activate.json to his file. Save to: <{path}>.")
             except:
-                return []
+                self.Game(self.get_level()).cmd(frontend.Game.window.ROOTs).update_terminal_text(
+                    ["You active level can't be saved! Please write to admin that to resolve this problem."], username="FATAL ERROR")
+                Logger().log(f"In process of save active level was appeared error!")
         else:
-            return []
+            Logger().log(f"Can't save level to <{path}>.")
 
-    def log(self, message: str):
-        self.createLogDir()
-        stack = Gate().stack().get_stack()
-        if (stack.get("log_name") != "None" or None):
-            latest = self.__read_log()
-            file = None
-            try:
-                file = open(Gate().stack().get_stack().get("log_name"), "w+", encoding="UTF-8")
-                for line in latest:
-                    file.write((line))
-                file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}\n"))
-            except:
-                name = self.__new_log_name()
-                file = open(name, "w+", encoding="UTF-8")
-                file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}\n"))
+    def ImageCheck(self) -> bool:
+        if (os.path.exists(values().get_base_resources_directory())):
+            if (os.path.exists(values().get_base_menu_button_image_directory())):
+                return True
+            else:
+                Logger().log("Attempt to save image..")
+                req = None
+                for i in range(4):
+                    try:
+                        req = requests.get(values().get_url_menu_button_image())
+                        if (req.status_code == 200):
+                            with open(values().get_base_menu_button_image_directory(), 'wb') as f:
+                                f.write(req.content)
+                            Logger().log("Success attempt save!")
+                            del req
+                            return True
+                    except:
+                        Logger().log(f"Lose attempt {i + 1}. Status code: {req.status_code}")
+        else:
+            os.mkdir(values().get_base_resources_directory())
+            Logger().log("Resources directory was been created.")
+            Logger().log("Attempt to save image..")
+            req = None
+            for i in range(4):
                 try:
-                    Gate().stack().controller({"log_name": name})
+                    req = requests.get(values().get_url_menu_button_image())
+                    if (req.status_code == 200):
+                        with open(values().get_base_menu_button_image_directory(), 'wb') as f:
+                            f.write(req.content)
+                        Logger().log("Success attempt save!")
+                        del req
+                        return True
                 except:
-                    if (isinstance(file, io.TextIOWrapper)):
-                        file.close()
-                        return None
-                    else:
-                        return None
-            finally:
-                if (isinstance(file, io.TextIOWrapper)):
-                    file.close()
-                else:
-                    return None
-        else:
-            name = self.__new_log_name()
-            Gate().stack().controller({"log_name": name})
-            file = open(name, "w+", encoding="UTF-8")
-            file.write((f"[{datetime.datetime.now().hour}:{datetime.datetime.now().minute}:{datetime.datetime.now().second}] {message}\n"))
-            file.close()
-
-    def createLogDir(self) -> bool:
-        if (os.path.exists(f"{Gate().get_base_directory()}/Terminal/logs")):
-            return True
-        else:
-            os.mkdir(Gate().get_base_directory())
-            os.mkdir(f"{Gate().get_base_directory()}/Terminal")
-            os.mkdir(f"{Gate().get_base_directory()}/Terminal/logs")
-            return True
+                    Logger().log(f"Lose attempt {i+1}. Status code: {req.status_code}")
+        return False
 
 
 

@@ -1,0 +1,10 @@
+
+Virtual Environment Commands (VEC):
+* help - printed this content
+* create - command for create something in the Terminal VE
+* start - command for starting game with new level
+* c - command for scroll the Terminal console down
+For more information write command name.
+
+NOTE: You can use this command even in game, for this write <ve (YOU COMMAND)>
+But for some changes will be need restart game.

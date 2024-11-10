@@ -1,9 +1,26 @@
 from random import randint
+import os
+from getpass import getuser
 
 class values():
 
+    def get_base_game_time_stack(self) -> str:
+        return "GameTime"
+
+    def get_base_level_name_stack_cont(self) -> str:
+        return "LevelName"
+
     def get_base_bg(self) -> str:
-        return "cyan"
+        return "gray17"
+
+    def get_base_terminal_bg(self) -> str:
+        return "gray18"
+
+    def get_base_terminal_system_username(self) -> str:
+        return ""
+
+    def get_base_menu_bg(self) -> str:
+        return self.get_base_bg()
 
     def get_stack_spliter(self) -> str:
         return "/*/="
@@ -16,6 +33,15 @@ class values():
 
     def get_base_bg_color(self) -> str:
         return self.get_base_bg()
+
+    def get_base_menu_title(self) -> str:
+        return self.get_base_title()
+
+    def get_base_directory(self) -> str:
+        return f"{os.environ['SYSTEMDRIVE']}/Users/{getuser()}/AppData/Roaming/HCC"
+
+    def get_base_resources_directory(self) -> str:
+        return f"{self.get_base_directory()}/Terminal/Resources"
 
     def get_base_terminal_message(self) -> list[str]:
         f = open("backend/preFiles/app/terminal_base_message", "r")
@@ -31,10 +57,16 @@ class values():
         return message
 
     def get_base_button_color(self) -> str:
-        return "white"
+        return "mediumseagreen"
 
     def get_based_text_color(self) -> str:
         return "limegreen"
 
+    def get_base_menu_button_image_directory(self) -> str:
+        return f"{self.get_base_resources_directory()}/back_image.png"
+
     def get_base_username(self) -> str:
         return "$USER5$-G"
+
+    def get_url_menu_button_image(self) -> str:
+        return "https://www.pngarts.com/files/8/Round-Back-Button-PNG-Image-Background.png"
