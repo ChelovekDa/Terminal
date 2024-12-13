@@ -1,24 +1,28 @@
 import time
 import tkinter
 import os
+
 import requests
 import json
 
 import frontend.Game.window
 from backend.commands.basedCommand import based
 from backend.commands.ping import ping
+from backend.commands.help import help as help_t
 from backend.commands.use import use
 from backend.commands.clear import clear
 from backend.commands.list import list as lst
 from backend.commands.commandLine import line
+from backend.commands.delete import delete
 
 from backend.ve_commands.ve_gate import ve_gate
 from backend.ve_commands.help import help
 from backend.ve_commands.create import create
 from backend.ve_commands.start import start
+from backend.ve_commands.change import change
 
 from frontend.Game.window import Tk
-from backend.funcs.generate_play_space import Level as Level, Building, Floor, Room, names
+from backend.funcs.generate_play_space import Level as Level, Building, Floor, Room, _based
 from based.based_values import values
 from based.Logger import Logger, stack
 
@@ -50,6 +54,7 @@ class Gate():
 
             def __init__(self, terminal_root: Tk):
                 self.root = terminal_root
+                self.special = ["clear", "c", "delete", "del"]
 
             def update_terminal_text(self, new_text: list[str], username: str = values().get_base_username(), replace: bool = False) -> Tk:
                 """
@@ -58,27 +63,61 @@ class Gate():
                 :argument new_text - text that you want to print to user screen.
                 :argument replace - are you want to delete all information on terminal screen and replace it?
                 """
+
                 if (replace):
                     self.root.listbox.delete(0, tkinter.END)
                     self.root.listbox.insert(0, "")
-                    for i in range(len(new_text)):
-                        self.root.listbox.insert(i+1, f"  <{username}>: {new_text[i]}")
-                    return self.root
+                    if (username == "|"):
+                        for i in range(len(new_text)):
+                            self.root.listbox.insert(i + 1, f"  {new_text[i]}")
+                    else:
+                        for i in range(len(new_text)):
+                            self.root.listbox.insert(i + 1, f"  <{username}>: {new_text[i]}")
                 else:
-                    index = self.root.listbox.size()
-                    for line in new_text:
-                        self.root.listbox.insert(index, f"  <{username}>: {line}")
-                        index+=1
-                    return self.root
+                    #remove empty lines
+                    for i in range(self.root.listbox.size()):
+                        if (i == 0):
+                            continue
+                        res = str(self.root.listbox.get(i, i))
+                        if (res not in ["", "('s',)", "('',)", "('\\t',)"]):
+                            continue
+                        else:
+                            if (str(self.root.listbox.get(i+1, i+1)) in ["", "('s',)", "('',)", "('\\t',)"]
+                            and str(self.root.listbox.get(i+2, i+2)) in ["", "('s',)", "('',)", "('\\t',)"]):
+                                self.root.listbox.delete(i, tkinter.END)
+                                break
+                            else:
+                                continue
+
+                    if (username == "|"):
+                        index = self.root.listbox.size()
+                        for line in new_text:
+                            self.root.listbox.insert(index, f"  {line}")
+                            index += 1
+                    else:
+                        index = self.root.listbox.size()
+                        for line in new_text:
+                            self.root.listbox.insert(index, f"  <{username}>: {line}")
+                            index+=1
+
+                index = self.root.listbox.size()
+                for i in range(31):
+                    self.root.listbox.insert(index, "\t")
+                    index += 1
+                return self.root
 
             def __get_command_catalogue(self) -> dict[str, based]:
                 catalogue = {
                     "ve": ve_gate(),
                     "VE": ve_gate(),
+                    "help": help_t(),
                     "ping": ping(),
                     "use": use(),
                     "c": clear(),
-                    "list": lst()
+                    "clear": clear(),
+                    "list": lst(),
+                    "del": delete(),
+                    "delete": delete()
                 }
                 return catalogue
 
@@ -99,7 +138,7 @@ class Gate():
 
                 return lst
 
-            def activate_command(self):
+            def activate_command(self) -> str:
                 """
                 This function need to do the commands from terminal that user entered.
                 command - this parameter contains a list with all command lines that user entered.
@@ -112,18 +151,30 @@ class Gate():
 
                 username = values().get_base_terminal_system_username()
                 if (self.__get_command_catalogue().get(command[0]) == None):
-                    self.update_terminal_text(["This command wasn't be applied! This command is not to be found.", ""], username=username)
+                    self.update_terminal_text(["This command wasn't be applied! This command is not to be found."], username=username)
+                    self.update_terminal_text([], username="|")
                     Logger().log(f"Command <{str(command)}> is not be found.")
+
                 else:
-                    if (len(command) >= 2 and command[1] != ""):
+                    if (len(command) >= 1 and command[0] in self.special):
+                        self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username="|")
+                        Logger().log(f"Was been applied command <{str(command)}>")
+
+                    elif (len(command) >= 2 and command[1] != ""):
                         self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username=username)
                         Logger().log(f"Was been applied command <{str(command)}>")
-                    elif (len(command) == 1 and command[1] == "" or " " and command[1] == "VE" or "ve"):
+
+                    elif (len(command) == 1 and command[0] == "VE" or "ve"):
                         self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username=username)
                         Logger().log(f"Was been applied command <{str(command)}>")
+
                     else:
                         Logger().log(f"Command <{str(command)}> cant be applied.")
                         self.update_terminal_text(["This command cant be applied because text length less than need."], username=username)
+                res = ""
+                for item in command:
+                    res = res + f" {item}"
+                return res
 
         class VE(cmd):
 
@@ -137,12 +188,17 @@ class Gate():
                 catalogue = {
                     "help": help(),
                     "create": create(),
+                    "c": clear(),
                     "clear": clear(),
-                    "start": start()
+                    "start": start(),
+                    "del": delete(),
+                    "delete": delete(),
+                    "ch": change(),
+                    "change": change()
                 }
                 return catalogue
                 
-            def activate_command(self):
+            def activate_command(self) -> str:
                 """
                 For more details see parent func.
                 """
@@ -154,19 +210,27 @@ class Gate():
 
                 username = values().get_base_terminal_system_username()
                 if (self.__get_command_catalogue().get(command[0]) == None):
-                    self.update_terminal_text(["This command wasn't be applied! This command is not to be found.", ""],
-                                              username=username)
+                    self.update_terminal_text(["This command wasn't be applied! This command is not to be found."], username=username)
+                    self.update_terminal_text([], username="|")
                     Logger().log(f"Command <{str(command)}> is not be found.")
                 else:
                     if (len(command) >= 1):
-                        self.update_terminal_text(
-                            self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)),
-                            username=username)
-                        Logger().log(f"Was been applied command <{str(command)}>")
+                        if (command[0] in self.special):
+                            self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username="|")
+                            Logger().log(f"Was been applied command <{str(command)}>")
+                        else:
+                            self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username=username)
+                            Logger().log(f"Was been applied command <{str(command)}>")
                     else:
                         Logger().log(f"Command <{str(command)}> cant be applied.")
-                        self.update_terminal_text(["This command cant be applied because text length less than need."],
-                                                  username=username)
+                        self.update_terminal_text(["This command cant be applied because text length less than need."], username=username)
+                res = ""
+                for index, item in enumerate(command):
+                    if index == 0:
+                        res = str(item)
+                    else:
+                        res = res + f" {item}"
+                return res
 
     def clear(self, password: str) -> None:
         """This function need to clear all program files."""
@@ -182,11 +246,51 @@ class Gate():
             time.sleep(1)
 
     def get_level(self) -> Level:
+
+        def when_list(obj: list) -> list:
+            lst = []
+            for i, value in enumerate(obj):
+                if (isinstance(value, str)):
+                    lst.append(str(base.get(keyb)))
+                elif (isinstance(value, list)):
+                    lst.append(when_list(list(value)))
+                elif (isinstance(value, bool) or isinstance(value, int)):
+                    lst.append(value)
+                else:
+                    Logger().log(
+                        f"Cant import unknown data state from activate.json in target of level. Data: <{value}>")
+            return lst
+
         with open("backend/preFiles/app/activate.json", "r") as read_file:
             data = json.load(read_file)
         data = dict(data)
         level = Level([])
         for build_key in data.keys():
+            if (build_key == "target"):
+                for keya in dict(data.get(build_key)).keys():
+                    base = dict(dict(data.get(build_key)).get(keya))
+                    command = []
+                    for index, keyb in enumerate(base.keys()):
+                        if (keyb != "type"):
+                            if (isinstance(base.get(keyb), str)):
+                                command.append(f"\"{str(base.get(keyb))}\"")
+                            elif (isinstance(base.get(keyb), list)):
+                                command.append(f"[{when_list(list(base.get(keyb)))}]")
+                            elif (isinstance(base.get(keyb), bool) or isinstance(base.get(keyb), int)):
+                                command.append(f"{base.get(keyb)}")
+                            else:
+                                Logger().log(f"Cant import unknown data state from activate.json in target of level. Data: <{base.get(keyb)}>")
+                        else:
+                            continue
+                    class_obj = globals()[keya]
+                    FE = "class_obj("
+                    for i, val in enumerate(command):
+                        FE = FE + val
+                        if (len(command) != (i+1)):
+                            FE = FE + ", "
+                    FE = FE + ")"
+                    obj = _based(exec(FE))
+                    level.req = obj
             build = dict(data.get(build_key))
             building = Building([])
             for fl_key in build.keys():

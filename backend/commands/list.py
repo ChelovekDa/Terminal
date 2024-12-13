@@ -2,6 +2,8 @@ import builtins
 from backend.commands.basedCommand import based as BASE
 from backend.commands.commandLine import line as LINE
 import based.gate
+from based.Logger import stack
+
 
 class list(BASE):
 
@@ -55,7 +57,7 @@ class list(BASE):
                             continue
             return ["Invalid room name"]
         elif (self.__is("floor")):
-            now_building = based.gate.Gate().stack().get_stack().get("now_building")
+            now_building = stack().get_stack().get("now_building")
             if (now_building != "None" or None):
                 for number, build in enumerate(self.Level.buildings):
                     if (number == int(now_building)):
@@ -80,7 +82,7 @@ class list(BASE):
                 return ["Invalid floor number"]
         elif (self.__is("build")):
             if (self.__to_int(str(builtins.list(str(self.arg))[1]))):
-                based.gate.Gate().stack().controller({"now_building": str(builtins.list(str(self.arg))[1])})
+                stack().controller({"now_building": str(builtins.list(str(self.arg))[1])})
                 return [f"The looked building was been set to \"{str(builtins.list(str(self.arg))[1])}\"!",
                         "For look the floor write \"list floor\" and number floor that you want to see."]
             else:

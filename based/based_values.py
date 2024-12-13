@@ -2,7 +2,12 @@ from random import randint
 import os
 from getpass import getuser
 
-class values():
+class values:
+
+    class file_names:
+
+        def get_change_command_help_message_file_name(self) -> str:
+            return "change_help_command"
 
     def get_base_game_time_stack(self) -> str:
         return "GameTime"
@@ -31,11 +36,17 @@ class values():
     def get_base_sizes(self) -> list[int]:
         return [1200, 700]
 
-    def get_base_bg_color(self) -> str:
+    def get_base_background_color(self) -> str:
         return self.get_base_bg()
+
+    def get_base_list_round_console_lines(self) -> list[float]:
+        return [0.7, 0.8, 0.9, 1.0]
 
     def get_base_menu_title(self) -> str:
         return self.get_base_title()
+
+    def get_base_stack_for_last_level_created_name(self) -> str:
+        return "lastLevelName"
 
     def get_base_directory(self) -> str:
         return f"{os.environ['SYSTEMDRIVE']}/Users/{getuser()}/AppData/Roaming/HCC"

@@ -5,41 +5,49 @@ import time
 
 from backend.commands.commandLine import line
 from backend.commands.basedCommand import based
-from based.Logger import Logger
+from based.Logger import Logger, stack
 from based.based_values import values
-from frontend.Menu.root import MENUs as MENU
 
 from backend.commands.clear import clear
+from backend.commands.delete import delete
 
 class start(based):
     """
     In this command happens all backend operations for start game.
     """
 
-    def __init__(self, from_t: bool = False):
-        self.from_t = from_t
-        super().__init__()
+    def __replace(self) -> None:
+        """
+        Replaced all elements in app window.
+        """
+        delete().other_cast()
+        stack().controller({"from_terminal": "True"})
+        Logger().log("Changed window to the Terminal console..")
+        print("Change to the Terminal")
+
+    def help(self) -> list[str]:
+        f = open("backend/preFiles/app/start_message", "r")
+        message = f.readlines()
+        f.close()
+        for i in range(len(message)):
+            if ("\n" in message[i]):
+                message[i] = message[i].replace("\n", "")
+        return message
 
     def cast(self, cl: line) -> list[str]:
-        message = []
-
-        if (self.from_t == False):
+        self.check(cl)
+        super().__init__(self.padding, cl)
+        if (self.padding == 0):
             if (cl.command[0] == "start"):
-                if (len(cl.command) == 1):
-                    f = open("backend/preFiles/app/start_message", "r")
-                    message = f.readlines()
-                    f.close()
-                    for i in range(len(message)):
-                        if ("\n" in message[i]):
-                            message[i] = message[i].replace("\n", "")
-                    return message
+                if (self.__len__() == 1):
+                    return self.help()
                 elif (len(cl.command) == 2):
                     if (cl.command[1] in ["", " ", "l"]):
-                        MENU.get_root().destroy()
+                        self.__replace()
                         return []
                     else:
                         for item in list(os.listdir(f"{values().get_base_directory()}/Terminal/Levels")):
-                            if (item.split(".")[0] == cl.command[1]):
+                            if (item.split(".")[0] == self.get(1)):
                                 with open(f"{values().get_base_directory()}/Terminal/Levels/{item}", "r") as read_file:
                                     data = json.load(read_file)
                                 data = dict(data)
@@ -50,25 +58,18 @@ class start(based):
                                     json.dump(data, write_file)
                                 del data
                                 Logger().log("Write is success complete.")
-                                time.sleep(1)
-                                MENU.get_root().destroy()
+                                self.__replace()
                                 return []
                             else:
                                 continue
                 else:
-                    message = ["This command can't be applied."]
+                    return ["This command can't be applied."]
             else:
-                message = ["This is not command"]
+                return ["This is not command"]
         else:
             if (cl.command[1] == "start"):
                 if (len(cl.command) == 2):
-                    f = open("backend/preFiles/app/start_message", "r")
-                    message = f.readlines()
-                    f.close()
-                    for i in range(len(message)):
-                        if ("\n" in message[i]):
-                            message[i] = message[i].replace("\n", "")
-                    return message
+                    return self.help()
                 elif (len(cl.command) == 3):
                     if (cl.command[2] in ["", " ", "l"]):
                         return ["This level already started!"]
@@ -86,13 +87,13 @@ class start(based):
                                 del data
                                 Logger().log("Write is success complete.")
                                 clear().cast(cl)
-                                time.sleep(1)
+                                time.sleep(0.2)
                                 return ["Success change to other level."]
                             else:
                                 continue
                 else:
-                    message = ["This command can't be applied."]
+                    return ["This command can't be applied."]
             else:
-                message = ["This is not command"]
+                return ["This is not command"]
 
-        return message
+        return []

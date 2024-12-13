@@ -6,6 +6,8 @@ from backend.ve_commands.create import create
 from backend.ve_commands.help import help
 from backend.ve_commands.start import start
 from backend.commands.clear import clear
+from backend.commands.delete import delete
+from backend.ve_commands.change import change
 
 class ve_gate(based):
 
@@ -16,8 +18,13 @@ class ve_gate(based):
         catalogue = {
             "help": help(),
             "create": create(),
+            "c": clear(),
             "clear": clear(),
-            "start": start()
+            "start": start(),
+            "del": delete(),
+            "delete": delete(),
+            "ch": change(),
+            "change": change()
         }
         return catalogue
 

@@ -1,0 +1,14 @@
+
+The Terminal Commands (TTK):
+* help - printing this content
+* VE/ve - needs for use VE commands.
+    NOTE: after special word must type command which you want to apply.
+* ping - printing list with all rooms which contains given item.
+* use - needs to use anything in the level
+* c/clear - scroll down the console
+* list - printing information about object
+* del/delete - whole clearing the Terminal console
+For more information write command name.
+
+NOTE: You can copy last written text in the Terminal console.
+For this, press the 'shift+insert'

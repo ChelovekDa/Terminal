@@ -5,7 +5,7 @@ from os import path
 import datetime
 
 import based
-from based.Logger import stack
+from based.Logger import stack, Logger
 from based.based_values import values
 
 names = []
@@ -44,7 +44,7 @@ class Items():
         return None
 
     def __len__(self) -> int:
-        """Return the length of self.items list"""
+        """Return the length of items list"""
         item = _based(None)
         i = 0
         for item in self.items:
@@ -76,6 +76,23 @@ class Floor():
     def append(self, obj: Room):
         self.rooms.append(obj)
 
+    def __get_room_names(self) -> list[str]:
+        names = []
+        for room in self.rooms:
+            names.append(room.name)
+        return names
+
+    def __contains__(self, room_name: str) -> bool:
+        return room_name in self.__get_room_names()
+
+    def __get__(self, room_name: str) -> Room:
+        if self.__contains__(room_name):
+            for room in self.rooms:
+                if (room.name == room_name):
+                    return room
+        else:
+            return Room([], "", True)
+
 class Building():
 
     def __init__(self, floors: list[Floor]):
@@ -89,13 +106,23 @@ class Level():
     def gen_name(self) -> str:
         return f"NewWorld-{str(datetime.datetime.now().year)}-{str(datetime.datetime.now().month)}-{str(datetime.datetime.now().day)}-{str(datetime.datetime.now().hour)}-{str(datetime.datetime.now().minute)}-{str(datetime.datetime.now().second)}"
 
-    def __init__(self, buildings: list[Building], name: str = ""):
+    def __init__(self, buildings: list[Building], name: str = "", requirement: _based = _based(None)):
+        global Item
         self.buildings = buildings
         if (name == ""):
             name = self.gen_name()
         self.name = name
-        self.Logger = based.gate.Logger()
-        self.Gate = based.gate.Gate()
+        if (requirement.clazz == None):
+            self.req = self.__generate_finish_requirement()
+
+    def __generate_finish_requirement(self) -> _based:
+        """
+        This func setting a finish requirement needs to finish the level
+        NOTE: Everyone level has a single requirement to finish level.
+
+        :return: Set the requirement of finish level
+        """
+        return Item().Document(name="TOP SECRET", information="TOP SECRET", important=True)
 
     def get_names(self) -> list[str]:
         return names
@@ -105,8 +132,7 @@ class Level():
 
     def str(self) -> dict:
         dic = {}
-        level = self
-        for i, building in enumerate(level.buildings):
+        for i, building in enumerate(self.buildings):
             build = {}
             for k, floor in enumerate(building.floors):
                 fl = {}
@@ -151,13 +177,15 @@ class Level():
         open(f"backend/preFiles/app/activate.json", "w").close()
         with open(f"backend/preFiles/app/activate.json", "w") as write_file:
             json.dump(dic, write_file)
-        self.Logger.log(f"Was been saved a new level without keys set. Site: {self.name}")
+        Logger().log(f"Was been saved a new level without keys set. Site: {self.name}")
 
     def _set_keys(self):
         data = {}
         def get_count() -> int:
             count = 0
             for build in data.keys():
+                if (build == "target"):
+                    break
                 build_dict = dict(data.get(build))
                 for floor in build_dict.keys():
                     floor_dict = dict(build_dict.get(floor))
@@ -192,7 +220,7 @@ class Level():
         open(f"backend/preFiles/app/activate.json", "w").close()
         with open(f"backend/preFiles/app/activate.json", "w") as write_file:
             json.dump(data, write_file)
-        self.Logger.log(f"Was been saved a new level with key set and lock rooms. Site: {self.name}")
+        Logger().log(f"Was been saved a new level with key set and lock rooms. Site: {self.name}")
 
 class Item():
 
@@ -263,20 +291,12 @@ class Item():
         return catalogue
 
     def str(self, obj: _based) -> str:
-        catalogue = {
-            self.Key: "Key",
-            self.Lockpick: "Lockpick",
-            self.Document: "Document",
-            self.Paper: "Paper",
-            self.Toilet_paper: "Toilet_paper",
-            self.Poop: "Poop",
-            self.Stair: "Stair",
-            self.Sofa: "Sofa",
-            self.Table: "Table",
-            self.Syringe: "Syringe",
-            self.Waste: "Waste"
-        }
-        return catalogue.get(type(obj))
+        cat = dict(self.__get_catalogue())
+        for key in cat.keys():
+            if (type(cat.get(key)) == type(obj)):
+                return key
+        del cat
+        return None
 
     def get_random_item(self) -> _based:
         return self.__get_catalogue().get(random.choice(list(self.__get_catalogue().keys())))
@@ -288,23 +308,35 @@ class Generate():
 
     def __generate_room_name(self) -> str:
         global names
-        name = random.choice("QWERTYUIOPASDFGHJKLZXCVBNM")
-        name = name + (str(random.randint(1, 9)))
+        name = f"{random.choice("QWERTYUIOPASDFGHJKLZXCVBNM")}{str(random.randint(1, 9))}"
         if (name not in names):
             names.append(name)
             return name
         else:
-            return self.__generate_room_name()
+            self.__generate_room_name()
 
     def __generate_room_name_for_HARD(self) -> str:
         global names
-        name = random.choice("QWERTYUIOPASDFGHJKLZXCVBNM")
-        name = name + (str(random.randint(1, 99)))
+        name = f"{random.choice("QWERTYUIOPASDFGHJKLZXCVBNM")}{str(random.randint(1, 99))}"
         if (name not in names):
             names.append(name)
             return name
         else:
-            return self.__generate_room_name_for_HARD()
+            self.__generate_room_name()
+
+    def base_val(self) -> str:
+        """
+        This func called when was arrived the "maximum recursion depth exceeded" error.
+        :return: str with name of room.
+        """
+        global names
+        for alp in "QWERTYUIOPASDFGHJKLZXCVBNM":
+            for i in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+                if (names.count(f"{alp}{str(i)}") != 1):
+                    names.append(f"{alp}{str(i)}")
+                    return f"{alp}{str(i)}"
+                else:
+                    continue
 
     def __generate_items(self, count: int) -> Items:
         items = Items([])
@@ -336,6 +368,8 @@ class Generate():
         Main func for return already completed level.
         :return: Level
         """
+        global names
+        names = []
         level = Level
         if (self.name != ""):
             level = Level([], name=self.name)
@@ -381,7 +415,6 @@ class Generate():
         self.dif = difficulty
         self.seed = self.__generate_new_seed()
         self.Logger = based.gate.Logger()
-        self.Gate = based.gate.Gate()
         self.name = name
 
 
