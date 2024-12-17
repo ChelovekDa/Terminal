@@ -115,6 +115,14 @@ class Level():
         if (requirement.clazz == None):
             self.req = self.__generate_finish_requirement()
 
+    def unlock_all_doors(self):
+        for building in self.buildings:
+            build = building
+            for floor in build.floors:
+                floo = floor.rooms
+                for room in floo:
+                    room.blocked = False
+
     def __generate_finish_requirement(self) -> _based:
         """
         This func setting a finish requirement needs to finish the level
@@ -163,6 +171,7 @@ class Level():
     def to_json(self, dic: dict = None):
         if (dic == None):
             dic = self.str()
+        data = dic
 
         direc = f"{values().get_base_directory()}/Terminal/Levels"
         if (path.exists(direc)):
@@ -313,7 +322,7 @@ class Generate():
             names.append(name)
             return name
         else:
-            self.__generate_room_name()
+            return self.__generate_room_name()
 
     def __generate_room_name_for_HARD(self) -> str:
         global names
@@ -322,7 +331,7 @@ class Generate():
             names.append(name)
             return name
         else:
-            self.__generate_room_name()
+            return self.__generate_room_name_for_HARD()
 
     def base_val(self) -> str:
         """
@@ -357,7 +366,7 @@ class Generate():
         elif(self.dif == 3):
             seed = seed + (str(random.randint(5, 10)))  # buildings
             seed = seed + (str(random.randint(9, 18)))  # floors
-            seed = seed + (str(random.randint(5, 10)))  # rooms
+            seed = seed + (str(random.randint(6, 10)))  # rooms
         else:
             self.dif = 2
             seed = self.__generate_new_seed()

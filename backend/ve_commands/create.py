@@ -11,6 +11,9 @@ from based.based_values import values
 
 import tkinter.messagebox
 
+from based.langist import language
+
+
 class create(based):
     """
     Command <create> needs to create something items in Virtual Environment (VE), then not be owns to common Terminal.
@@ -45,7 +48,7 @@ class create(based):
                 if (len(lst) > 300):
                     th = threading.Thread(
                         target=lambda: tkinter.messagebox.showinfo(title="Info",
-                                                                   message="You have too much saved levels. For optimized work of the Terminal you can delete a part of them."), daemon=True)
+                                                                   message=language().__getitem__("optimized_create_tkinter_message")[0]), daemon=True)
                     th.start()
                 return True
         del lst
@@ -66,13 +69,7 @@ class create(based):
         super().__init__()
 
     def help(self) -> list[str]:
-        f = open("backend/preFiles/app/create_message", "r")
-        message = f.readlines()
-        f.close()
-        for i in range(len(message)):
-            if ("\n" in message[i]):
-                message[i] = message[i].replace("\n", "")
-        return message
+        return language().__getitem__("create_command")
 
     def cast(self, cl: line) -> list[str]:
         message = []
@@ -87,39 +84,39 @@ class create(based):
                     level = Generate(name=Level([]).gen_name()).generate()
                     stack().controller({values().get_base_stack_for_last_level_created_name(): {level.name}})
                     del level
-                    return ["Level was been success created!"]
+                    return language().__getitem__("success_new_level_creating")
                 elif (self.get(1) == " "):
                     message = self.help()
-                    message.insert(0, "This level-name is not be setting!")
+                    message.insert(0, language().__getitem__("incorrect_level_name_for_creating")[0])
                     return message
                 else:
                     if (self.__check(self.get(1))):
-                        return ["Level with this name already exists."]
+                        return language().__getitem__("already_exists_level_message")
                     try:
                         level = Generate(name=self.get(1)).generate()
                         stack().controller({values().get_base_stack_for_last_level_created_name(): {level.name}})
                         del level
-                        return ["Level was been success created!"]
+                        return language().__getitem__("success_new_level_creating")
                     except Exception as e:
                         Logger().log(
                             f"When creating level with custom user's name that was appeared a error. Custom name: <{self.get(1)}>. Full command: <{cl.command}>. Error that was appeared: {e}")
-                        return ["Level with this custom name not can't be created."]
+                        return language().__getitem__("error_creating_level_with_custom_name_message")
 
             elif (self.__len__() == 3):
                 if (self.__to_int(self.get(2)) or self.__contains(int(self.get(2)))):
                     if (self.__check(self.get(1))):
-                        return ["Level with this name already exists."]
+                        return language().__getitem__("already_exists_level_message")
                     Logger().log("Creating new level with custom difficulty..")
                     level = Generate(difficulty=int(self.get(2)), name=self.get(1)).generate()
                     stack().controller({values().get_base_stack_for_last_level_created_name(): {level.name}})
                     del level
                     Logger().log("Creating complete!")
-                    return [f"Creating level with custom difficulty {self.get(2)} was complete!"]
+                    return language().__getitem__("success_creating_level_with_custom_difficulty_message", {"diff": self.get(2)})
                 else:
                     Logger().log(
                         f"Cant create new level with custom difficulty because need args was not be found. Command: <{cl.command}>.")
-                    message = ["The need arguments was not be found!"]
+                    return language().__getitem__("incorrect_difficulty_for_level_argument")
         else:
-            return ["This not command!"]
+            return language().__getitem__("cant_applied_command")
 
         return message

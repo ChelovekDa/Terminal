@@ -1,4 +1,3 @@
-
 import os
 import json
 import time
@@ -10,6 +9,8 @@ from based.based_values import values
 
 from backend.commands.clear import clear
 from backend.commands.delete import delete
+from based.langist import language
+
 
 class start(based):
     """
@@ -23,16 +24,9 @@ class start(based):
         delete().other_cast()
         stack().controller({"from_terminal": "True"})
         Logger().log("Changed window to the Terminal console..")
-        print("Change to the Terminal")
 
     def help(self) -> list[str]:
-        f = open("backend/preFiles/app/start_message", "r")
-        message = f.readlines()
-        f.close()
-        for i in range(len(message)):
-            if ("\n" in message[i]):
-                message[i] = message[i].replace("\n", "")
-        return message
+        return language().__getitem__("start_command")
 
     def cast(self, cl: line) -> list[str]:
         self.check(cl)
@@ -63,16 +57,16 @@ class start(based):
                             else:
                                 continue
                 else:
-                    return ["This command can't be applied."]
+                    return language().__getitem__("cant_applied_command")
             else:
-                return ["This is not command"]
+                return language().__getitem__("cant_applied_command")
         else:
             if (cl.command[1] == "start"):
                 if (len(cl.command) == 2):
                     return self.help()
                 elif (len(cl.command) == 3):
                     if (cl.command[2] in ["", " ", "l"]):
-                        return ["This level already started!"]
+                        return language().__getitem__("already_started_level_error_message")
                     else:
                         for item in list(os.listdir(f"{values().get_base_directory()}/Terminal/Levels")):
                             if (item.split(".")[0] == cl.command[2]):
@@ -88,12 +82,12 @@ class start(based):
                                 Logger().log("Write is success complete.")
                                 clear().cast(cl)
                                 time.sleep(0.2)
-                                return ["Success change to other level."]
+                                return language().__getitem__("success_changed_to_other_level_message")
                             else:
                                 continue
                 else:
-                    return ["This command can't be applied."]
+                    return language().__getitem__("cant_applied_command")
             else:
-                return ["This is not command"]
+                return language().__getitem__("cant_applied_command")
 
         return []

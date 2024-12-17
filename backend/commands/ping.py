@@ -3,6 +3,7 @@ from backend.commands.basedCommand import based
 from based.Logger import stack
 from based.based_values import values
 from backend.commands.commandLine import line
+from based.langist import language
 
 
 class ping(based):
@@ -43,14 +44,7 @@ class ping(based):
             return None
         else:
             if (len(self.cl.command) == 1 or self.cl.command[1] in ["", " "]):
-                f = open("backend/preFiles/app/ping_command_help", "r")
-                file = f.readlines()
-                f.close()
-                for i in range(len(file)):
-                    if ("\n" in file[i]):
-                        file[i] = file[i].replace("\n", "")
-                return file
-
+                return language().__getitem__("ping_command")
 
     #Example: ping (SMTH)
     def cast(self, cl: line) -> list[str]:
@@ -60,7 +54,7 @@ class ping(based):
         if (res is not None):
             return res
         if (not self.__check()):
-            return ["This command can be applied when from the beginning of start game passed 10 minutes."]
+            return language().__getitem__("wait_time_ping_message")
         self.command = self.__str(cl.command)
         self.Level = cl.Level
         message = []
@@ -73,11 +67,11 @@ class ping(based):
                 for floor in building.floors:
                     for room in floor.rooms:
                         if (line[1].lower() in room.items.__liter__()):
-                            message.append(f"Was been found this item in \"{room.name}\" room!")
+                            message.append(language().__getitem__("success_ping_item_message", {"{room.name}": room.name}))
 
         if (not self.__contains__(self.command)):
-            return ["Command was been entered not correct!"]
+            return language().__getitem__("incorrect_typed_command")
         elif (len(message) == 0):
-            return ["This item wasn't found!"]
+            return language().__getitem__("dont_success_ping_item_message")
 
         return message

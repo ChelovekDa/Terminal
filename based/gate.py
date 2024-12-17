@@ -20,6 +20,8 @@ from backend.ve_commands.help import help
 from backend.ve_commands.create import create
 from backend.ve_commands.start import start
 from backend.ve_commands.change import change
+from backend.ve_commands.set import set
+from based.langist import language
 
 from frontend.Game.window import Tk
 from backend.funcs.generate_play_space import Level as Level, Building, Floor, Room, _based
@@ -151,7 +153,7 @@ class Gate():
 
                 username = values().get_base_terminal_system_username()
                 if (self.__get_command_catalogue().get(command[0]) == None):
-                    self.update_terminal_text(["This command wasn't be applied! This command is not to be found."], username=username)
+                    self.update_terminal_text(language().__getitem__("cant_apply_command_gate_message"), username=username)
                     self.update_terminal_text([], username="|")
                     Logger().log(f"Command <{str(command)}> is not be found.")
 
@@ -160,17 +162,17 @@ class Gate():
                         self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username="|")
                         Logger().log(f"Was been applied command <{str(command)}>")
 
-                    elif (len(command) >= 2 and command[1] != ""):
+                    elif (len(command) == 1 and self.__get_command_catalogue().get(command[0]) != None):
                         self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username=username)
                         Logger().log(f"Was been applied command <{str(command)}>")
 
-                    elif (len(command) == 1 and command[0] == "VE" or "ve"):
+                    elif (len(command) >= 2 and command[1] != "") or (len(command) == 1 and command[0] in ["VE", "ve"]):
                         self.update_terminal_text(self.__get_command_catalogue().get(command[0]).cast(line(command, LEVEL)), username=username)
                         Logger().log(f"Was been applied command <{str(command)}>")
 
                     else:
                         Logger().log(f"Command <{str(command)}> cant be applied.")
-                        self.update_terminal_text(["This command cant be applied because text length less than need."], username=username)
+                        self.update_terminal_text(language().__getitem__("less_length_than_need_gate_message"), username=username)
                 res = ""
                 for item in command:
                     res = res + f" {item}"
@@ -194,7 +196,8 @@ class Gate():
                     "del": delete(),
                     "delete": delete(),
                     "ch": change(),
-                    "change": change()
+                    "change": change(),
+                    "set": set()
                 }
                 return catalogue
                 
@@ -210,7 +213,7 @@ class Gate():
 
                 username = values().get_base_terminal_system_username()
                 if (self.__get_command_catalogue().get(command[0]) == None):
-                    self.update_terminal_text(["This command wasn't be applied! This command is not to be found."], username=username)
+                    self.update_terminal_text(language().__getitem__("cant_apply_command_gate_message"), username=username)
                     self.update_terminal_text([], username="|")
                     Logger().log(f"Command <{str(command)}> is not be found.")
                 else:
@@ -223,7 +226,7 @@ class Gate():
                             Logger().log(f"Was been applied command <{str(command)}>")
                     else:
                         Logger().log(f"Command <{str(command)}> cant be applied.")
-                        self.update_terminal_text(["This command cant be applied because text length less than need."], username=username)
+                        self.update_terminal_text(language().__getitem__("less_length_than_need_gate_message"), username=username)
                 res = ""
                 for index, item in enumerate(command):
                     if index == 0:
@@ -316,8 +319,8 @@ class Gate():
                     json.dump(data, write_file)
                 Logger().log(f"Success save active level from activate.json to his file. Save to: <{path}>.")
             except:
-                self.Game(self.get_level()).cmd(frontend.Game.window.ROOTs).update_terminal_text(
-                    ["You active level can't be saved! Please write to admin that to resolve this problem."], username="FATAL ERROR")
+                self.Game(self.get_level()).cmd(frontend.Menu.root.MENUs).update_terminal_text(
+                    language().__getitem__("save_level_error_message"), username="FATAL ERROR")
                 Logger().log(f"In process of save active level was appeared error!")
         else:
             Logger().log(f"Can't save level to <{path}>.")

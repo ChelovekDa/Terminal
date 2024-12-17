@@ -5,6 +5,8 @@ from backend.commands.commandLine import line
 from backend.commands.basedCommand import based
 from backend.commands.delete import delete
 from based.based_values import values
+from based.langist import language
+
 
 class change(based):
 
@@ -17,6 +19,7 @@ class change(based):
                 name = f"{values().get_base_stack_for_last_level_created_name()}.json"
             else:
                 name = f"{self.get(1)}.json"
+
             if (name in os.listdir(f"{values().get_base_directory()}/Terminal/Levels")):
                 with open(f"{values().get_base_directory()}/Terminal/Levels/{name}", "r") as file:
                     data = json.load(file)
@@ -25,15 +28,9 @@ class change(based):
                     json.dump(data, wr_f)
                 del data
                 delete().other_cast()
-                return ["Success changed to last created level!"]
+                return language().__getitem__("success_changed_message")
             else:
-                return ["This level is not be found!"]
+                return language().__getitem__("incorrect_level_name_message")
         elif (self.get(0) == "change" and (self.get(1) in [None, " ", ""])):
-            f = open(f"backend/preFiles/app/change_help_command", "r")
-            file = f.readlines()
-            f.close()
-            for i in range(len(file)):
-                if ("\n" in file[i]):
-                    file[i] = file[i].replace("\n", "")
-            return file
+            return language().__getitem__("change_command")
         return []

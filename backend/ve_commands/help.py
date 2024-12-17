@@ -1,6 +1,8 @@
 
 from backend.commands.basedCommand import based
 from backend.commands.commandLine import line
+from based.langist import language
+
 
 class help(based):
 
@@ -8,12 +10,6 @@ class help(based):
         self.check(cl)
         super().__init__(self.padding, cl)
         if (self.get(0) == "help"):
-            f = open(f"backend/preFiles/app/help_message", "r")
-            message = f.readlines()
-            f.close()
-            for i in range(len(message)):
-                if ("\n" in message[i]):
-                    message[i] = message[i].replace("\n", "")
-            return message
+            return language().__getitem__("help_ve_command")
         else:
-            return ["Entered command is not correct!"]
+            return language().__getitem__("incorrect_typed_command")

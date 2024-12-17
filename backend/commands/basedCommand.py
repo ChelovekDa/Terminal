@@ -12,6 +12,9 @@ class based(line):
         super().__init__(cl.command, cl.Level)
 
     def get(self, index: int) -> str:
+        l = self.cl.command
+        ind = index
+        pad = self.padding
         return self.cl.command[index + self.padding]
 
     def __len__(self) -> int:

@@ -2,6 +2,8 @@ from backend.funcs.generate_play_space import *
 from backend.commands.commandLine import line
 from backend.commands.basedCommand import based
 
+from based.langist import language
+
 def to_int(str: str) -> int:
     try:
         return int(str)
@@ -36,29 +38,47 @@ class use(based):
             self.command = command
             self.level = level
 
-        def __finish(self) -> bool:
-            if (self.command[0] == "use"
-            and self.command[4] in ["fin", "finish", "f"]
-            and self.command[1] == "doc"
-            and self.command[2] == "in"
-            and len(self.command[3].split(".")) == 3):
-                return True
-            else:
-                return False
-
         def use_doc(self) -> list[str]:
-            message = []
-            if (self.__finish()):
-                obj = self.command[3].split(".")
-                if to_int(obj[0]) and to_int(obj[1]) is not None:
-                    if self.level.buildings[to_int(obj[0])].floors[to_int(obj[1])].__get__(obj[2]).items.__len__() != 0:
-                        room = self.level.buildings[to_int(obj[0])].floors[to_int(obj[1])].__get__(obj[2])
-                        for i in range(room.items.__len__()):
-                            item = room.items.__getitem__(i)
-                            if (type(item) == type(Item().Document())):
-                                ...
-
-
+            if (self.command[0] == "use"):
+                if (self.command[1] == "doc"):
+                    if (self.command[2] == "in"):
+                        if ((len(self.command[3].split(".")) == 3) and (to_int(self.command[3].split(".")[0]) and to_int(self.command[3].split(".")[1]) != None)):
+                            lst = self.command[3].split(".")
+                            for index_building, building in enumerate(self.level.buildings):
+                                if (index_building == to_int(lst[0])):
+                                    build = building.floors
+                                    for index_floor, floor in enumerate(build):
+                                        if (index_floor == to_int(lst[1])):
+                                            floo = floor.rooms
+                                            for room in floo:
+                                                if (room.name == lst[2]):
+                                                    if (self.command[4] in ["fin", "finish", "f"]):
+                                                        for i in range(room.items.__len__()):
+                                                            obj = room.items.__getitem__(i)
+                                                            if (type(self.level.req) == type(obj)):
+                                                                self.level.unlock_all_doors()
+                                                                return language().__getitem__("success_finish_level")
+                                                            else:
+                                                                continue
+                                                        return language().__getitem__("room_not_contains_document_message")
+                                                    elif (self.command[4] in ["r", "read", "re"]):
+                                                        for i in range(room.items.__len__()):
+                                                            obj = room.items.__getitem__(i)
+                                                            if (type(Item.Document()) == type(obj)):
+                                                                return language().__getitem__("result_reading_min_document_message", {"{name}": f"{obj.name}", "{text}": f"{obj.info}"})
+                                                            else:
+                                                                continue
+                                                        return language().__getitem__("room_not_contains_document_message")
+                                                    else:
+                                                        return language().__getitem__("incorrect_list_command_argument")
+                        else:
+                            return language().__getitem__("incorrect_difficulty_for_level_argument")
+                    else:
+                        return language().__getitem__("incorrect_difficulty_for_level_argument")
+                else:
+                    return language().__getitem__("incorrect_difficulty_for_level_argument")
+            else:
+                return language().__getitem__("incorrect_entered_help_ve_command_message")
 
     class __KeyUse():
         # example use KEY: use A3 on 0.2.A5
@@ -129,13 +149,7 @@ class use(based):
             return None
         else:
             if (len(self.arg) == 1 or self.arg[1] in ["", " "]):
-                f = open("backend/preFiles/app/use_terminal_command", "r")
-                file = f.readlines()
-                f.close()
-                for i in range(len(file)):
-                    if ("\n" in file[i]):
-                        file[i] = file[i].replace("\n", "")
-                return file
+                return language().__getitem__("use_command")
 
     def cast(self, cl: line) -> list[str]:
         self.arg = cl.command
@@ -144,6 +158,9 @@ class use(based):
             return res
         self.Level = cl.Level
         super().cast(cl)
-        message = []
         if (self.__is(self.arg[1]) and self.__KeyUse(self.arg, self.Level).key_on_room_use()):
-            return [f"Key was been successfully applied to {str(self.arg[3]).split(".")[2]} room."]
+            return language().__getitem__("success_middle_key_apply_message", {"{arg}": str(self.arg[3]).split(".")[2]})
+        elif (len(self.arg) == 4):
+            return self.__Document_use(self.arg, self.Level).use_doc()
+        else:
+            return language().__getitem__("incorrect_typed_command")

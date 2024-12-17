@@ -1,6 +1,8 @@
 
 from backend.commands.basedCommand import based
 from backend.commands.commandLine import line
+from based.langist import language
+
 
 class help(based):
 
@@ -11,12 +13,6 @@ class help(based):
         self.check(cl)
         super().__init__(self.padding, cl)
         if (self.get(0) == "help"):
-            f = open("backend/preFiles/app/help_terminal_command", "r")
-            file = f.readlines()
-            f.close()
-            for i in range(len(file)):
-                if ("\n" in file[i]):
-                    file[i] = file[i].replace("\n", "")
-            return file
+            return language().__getitem__("help_terminal_command")
         else:
-            return ["This command can be applied!"]
+            return language().__getitem__("cant_applied_command")

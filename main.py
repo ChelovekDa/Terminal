@@ -9,6 +9,7 @@ from backend.funcs.generate_play_space import Generate
 from based.gate import Gate
 from based.Logger import Logger, stack
 from based.based_values import values
+from based.langist import language
 from frontend.Menu.root import mTk
 from frontend.Menu.root import MENUs
 
@@ -50,12 +51,9 @@ class __started():
                 except RecursionError as e:
                     Logger().log(
                         f"In process of execute command was appeared a error. Error: <{e}>")
-                    Gate().Game(Gate().get_level()).cmd(MENUs).update_terminal_text(
-                        ["", "In process of execute command was appeared a error!",
-                         "Please, restart application and write this command again.",
-                         "If problem won't leave, write to creator.", ""],
-                        "|")
+                    Gate().Game(Gate().get_level()).cmd(MENUs).update_terminal_text(language().__getitem__("on_enter_RecursionError"),"|")
                 Gate().save_level()
+                MENUs.entry.yview_moveto(float("inf"))
                 time.sleep(1)
             else:
                 time.sleep(0.1)
