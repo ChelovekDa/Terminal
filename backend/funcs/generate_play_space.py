@@ -18,6 +18,9 @@ class _based():
     def __str__(self) -> str:
         return ""
 
+    def to_dict(self) -> dict:
+        pass
+
 class Items():
 
     def __iter__(self) -> list:
@@ -113,7 +116,8 @@ class Level():
             name = self.gen_name()
         self.name = name
         if (requirement.clazz == None):
-            self.req = self.__generate_finish_requirement()
+            requirement = self.generate_finish_requirement()
+        self.req = requirement
 
     def unlock_all_doors(self):
         for building in self.buildings:
@@ -123,7 +127,7 @@ class Level():
                 for room in floo:
                     room.blocked = False
 
-    def __generate_finish_requirement(self) -> _based:
+    def generate_finish_requirement(self) -> _based:
         """
         This func setting a finish requirement needs to finish the level
         NOTE: Everyone level has a single requirement to finish level.
@@ -166,6 +170,7 @@ class Level():
                     fl[room.name] = room_dict
                 build[str(k)] = dict(fl)
             dic[str(i)] = dict(build)
+        #dic["target"] = self.req.to_dict()
         return dic
 
     def to_json(self, dic: dict = None):
@@ -255,6 +260,11 @@ class Item():
             self.info = information
             self.name = name
             self.important = important
+
+        def to_dict(self) -> dict:
+            return {
+                "Document": {"type": Item().str(Item.Document()), "information": self.info, "important": self.important,
+                             "name": self.name}}
 
     class Paper(_based):
         def __init__(self):

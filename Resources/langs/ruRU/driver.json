@@ -1,0 +1,11 @@
+{
+	"change_command": "change_message.txt",
+	"create_command": "create_message.txt",
+	"help_ve_command": "help_message.txt",
+	"help_terminal_command": "help_terminal_command.txt",
+	"list_command": "list_message.txt",
+	"ping_command": "ping_message.txt",
+	"start_command": "start_message.txt",
+	"use_command": "use_message.txt",
+	"set_command": "set_message.txt"
+}

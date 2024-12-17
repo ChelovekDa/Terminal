@@ -1,0 +1,15 @@
+
+Virtual Environment Commands (VEC):
+* help - printing this content.
+* create - command for create something in the Terminal VE.
+* start - command for starting game.
+* c/clear - command for scroll the Terminal console down.
+* del/delete - whole clearing the Terminal console.
+* set - command for setting content.
+
+For more information write command name.
+
+NOTE: You can use this command even in game, for this write <ve (YOU COMMAND)>
+But for some changes will be need restart game.
+NOTE: You can copy last written text in the Terminal console.
+For this, press the 'shift+insert'

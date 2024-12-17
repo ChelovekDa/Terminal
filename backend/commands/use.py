@@ -55,9 +55,13 @@ class use(based):
                                                     if (self.command[4] in ["fin", "finish", "f"]):
                                                         for i in range(room.items.__len__()):
                                                             obj = room.items.__getitem__(i)
-                                                            if (type(self.level.req) == type(obj)):
-                                                                self.level.unlock_all_doors()
-                                                                return language().__getitem__("success_finish_level")
+                                                            req = self.level.generate_finish_requirement()
+                                                            if (type(req) == type(obj)):
+                                                                if (req.to_dict() == obj.to_dict()):
+                                                                    self.level.unlock_all_doors()
+                                                                    return language().__getitem__("success_finish_level")
+                                                                else:
+                                                                    continue
                                                             else:
                                                                 continue
                                                         return language().__getitem__("room_not_contains_document_message")

@@ -1,0 +1,12 @@
+
+Set Command:
+* This command needs to setting some instance in VE or in the common Terminal.
+* Based example to use: <set> [SMTH]
+BASED:
+    * set [NOTHING] - printing this message
+
+SET LANGUAGE:
+    * set [lang] [SMTH] - setting entered language
+    NOTE: instead of second argument you can entering some of this: [lan], [lang], [language]
+    You must be entering instead of <[SMTH]> some language.
+    Based must be entering: english or russian languages.

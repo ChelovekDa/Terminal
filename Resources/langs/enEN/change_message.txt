@@ -1,0 +1,15 @@
+
+Change Command:
+* This command needs to change levels in Virtual Environment (VE) or in the common Terminal.
+* Based example to use: <change> [SMTH]
+BASED:
+    * change [NOTHING] - printing this message
+
+CHANGE LEVEL:
+	* change [l] - changing level on last created and saving current.
+	* change [new_level (OR SMTH NAME)] - changing current level on that have name what you entered.
+		NOTE: for using this var of command, you must be think name of level that you can change!
+
+	NOTE: You can changing levels in the Terminal.
+	For this using: <VE> <change> [SMTH]
+	

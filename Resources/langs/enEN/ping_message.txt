@@ -1,0 +1,12 @@
+
+Ping Command:
+* Command using when you want to find something item on level in game.
+* Based example to use: <ping> [SMTH]
+NOTE: You can use this command only after 10 minutes from the beginning of game.
+BASED:
+    * ping [NOTHING] - printing this message
+
+PING:
+    * ping [NOTHING] - printed this message
+    * ping [SMTH ITEM] - printed list with all rooms where contains this item
+    

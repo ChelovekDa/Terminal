@@ -1,0 +1,29 @@
+
+List Command:
+* This command needs to print some information about object that you interest.
+* This command must be apply only in the common Terminal.
+* Based example to use: <list> [SMTH]
+BASED:
+    * list [NOTHING] - printing this message
+
+LIST ROOM:
+	* list [ROOM NAME] - printing list with all items that contains entered room.
+		You must entering on <[ROOM NAME]> only name (examples: B3, U5, Z1)
+		NOTE: If room locked you can't see what it has.
+
+LIST FLOOR:
+	* list [floor] [FLOOR NUMBER] - printing list with all room names on this floor.
+		Example: list floor 5
+		floor - needs argument for system, his always uniform
+		5 - floor number
+
+		NOTE: This command printing list of rooms on this floor on building that was been set! Base that is zero building.
+		For change using building see down.
+
+LIST BUILDING:
+	* list [build] [BUILDING NUMBER] - setting new building number
+		Example: list build 2
+		build - needs argument for system, his always uniform
+		2 - building number
+
+		NOTE: Based value of <[BUILDING NUMBER]> this is zero building.

@@ -1,0 +1,35 @@
+
+Use Command:
+* This command needs to use something on level or in him.
+* Based example to use: <use> [SMTH] on [SMTH]
+BASED:
+    * use [NOTHING] - printing this message
+
+USE KEY:
+    * use [ROOM NAME] on [CORDS] - using key keeps in room on blocked room on the entered cords.
+        Example: use A3 on 0.2.A5
+        A3 - name of room in which key laying (because everyone name of rooms is unique).
+        0.2.A5 - coordinates of room on whose you want to apply key 
+        (0 - number building, 2 - number floor, A5 - name room)
+
+        NOTE: You must entered room's name with caps lock!
+
+USE DOCUMENT:
+    * use [doc] in [CORDS] [MODIFY] - using document
+        doc - this arg needs to understand that you want to open, read or use only some document.
+        [CORDS] - an arg with cords of document.
+        [MODIFY] - arg for understand what use want to do - [read/fin]
+
+        Example: use doc in 0.2.A5 finish
+        doc - needs argument, his always uniform
+        0.2.A5 - coordinates of room in whose you want to use document
+        finish - this modify on that you pointing what you want to do with this document
+
+        NOTE: You must entered room's name with caps lock!
+
+        You must entered this modify:
+            * for read document: [r], [read], [re]
+            * for finish level: [fin], [finish], [f]
+
+        NOTE: other modify won't be entered!
+        
