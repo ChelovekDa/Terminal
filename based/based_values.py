@@ -1,6 +1,5 @@
 from random import randint
 import os
-from getpass import getuser
 
 class values:
 
@@ -49,7 +48,7 @@ class values:
         return "lastLevelName"
 
     def get_base_directory(self) -> str:
-        return f"{os.environ['SYSTEMDRIVE']}/Users/{getuser()}/AppData/Roaming/HCC"
+        return f"{os.environ['SYSTEMDRIVE']}/Users/{os.getlogin()}/AppData/Roaming/HCC"
 
     def get_base_resources_directory(self) -> str:
         return f"{self.get_base_directory()}/Terminal/Resources"
