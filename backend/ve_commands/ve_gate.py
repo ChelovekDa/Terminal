@@ -9,6 +9,8 @@ from backend.commands.clear import clear
 from backend.commands.delete import delete
 from backend.ve_commands.change import change
 from backend.ve_commands.set import set
+from based.langist import language
+
 
 class ve_gate(based):
 
@@ -33,7 +35,9 @@ class ve_gate(based):
     def cast(self, cl: line) -> list[str]:
         self.check(cl)
         super().__init__(self.padding, cl)
+        if (len(cl.command) == 1):
+            return language().__getitem__("cant_applied_command")
         if (self.__get_command_catalogue().get(cl.command[1]) != None):
             return self.__get_command_catalogue().get(cl.command[1]).cast(line(cl.command, cl.Level))
         else:
-            return ["This command can't be applied."]
+            return language().__getitem__("cant_applied_command")

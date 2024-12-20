@@ -56,7 +56,7 @@ class __started():
                 MENUs.entry.yview_moveto(float("inf"))
                 time.sleep(1)
             else:
-                time.sleep(0.1)
+                time.sleep(0.01)
                 continue
 
     def start(self):

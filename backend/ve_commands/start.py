@@ -40,6 +40,8 @@ class start(based):
                         self.__replace()
                         return []
                     else:
+                        if len(list(os.listdir(f"{values().get_base_directory()}/Terminal/Levels"))) == 0:
+                            return language().__getitem__("cant_applied_command")
                         for item in list(os.listdir(f"{values().get_base_directory()}/Terminal/Levels")):
                             if (item.split(".")[0] == self.get(1)):
                                 with open(f"{values().get_base_directory()}/Terminal/Levels/{item}", "r") as read_file:
@@ -56,6 +58,8 @@ class start(based):
                                 return []
                             else:
                                 continue
+                        else:
+                            return language().__getitem__("cant_applied_command")
                 else:
                     return language().__getitem__("cant_applied_command")
             else:

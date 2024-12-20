@@ -141,9 +141,9 @@ class use(based):
         pass
 
     def __is(self, string: str) -> bool:
-        if (string.split("")[0] in ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F',
+        if (string[0] in ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F',
                                            'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M']
-                and string.split("")[1] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']):
+                and string[1] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']):
             return True
         else:
             return False

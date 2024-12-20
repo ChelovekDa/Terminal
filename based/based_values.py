@@ -1,6 +1,6 @@
 from random import randint
 import os
-
+import inspect
 class values:
 
     class file_names:
@@ -47,8 +47,11 @@ class values:
     def get_base_stack_for_last_level_created_name(self) -> str:
         return "lastLevelName"
 
+    def __get(self) -> str:
+        return f"{os.path.abspath(inspect.getsourcefile(lambda:0))}".split("\\")[2]
+
     def get_base_directory(self) -> str:
-        return f"{os.environ['SYSTEMDRIVE']}/Users/{os.getlogin()}/AppData/Roaming/HCC"
+        return f"{os.environ['SYSTEMDRIVE']}/Users/{self.__get()}/AppData/Roaming/HCC"
 
     def get_base_resources_directory(self) -> str:
         return f"{self.get_base_directory()}/Terminal/Resources"
