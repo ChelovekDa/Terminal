@@ -64,6 +64,7 @@ class __started():
     def start(self):
         """Main func"""
         sys.setrecursionlimit(3000)
+        Gate().check()
         Logger().log("Setting recursion limit to 3000.")
         Generate().generate()
         frontend.Menu.root.MENUs = mTk(

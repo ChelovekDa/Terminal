@@ -248,6 +248,22 @@ class Gate():
             stack().controller({values().get_base_game_time_stack(): count})
             time.sleep(1)
 
+    def check(self) -> bool:
+        if (os.path.exists(f"{values().get_base_directory()}/Terminal")):
+            if (os.path.exists(f"{values().get_base_directory()}/Terminal/Levels")):
+                if (os.path.exists(f"{values().get_base_directory()}/Terminal/logs")):
+                    if (os.path.exists(f"{values().get_base_directory()}/Terminal/Resources")):
+                        if (os.path.exists(f"{values().get_base_directory()}/Terminal/Resources/langs")):
+                            return True
+                    else:
+                        os.makedirs(f"{values().get_base_directory()}/Terminal/Resources/langs")
+                else:
+                    os.makedirs(f"{values().get_base_directory()}/Terminal/logs")
+            else:
+                os.makedirs(f"{values().get_base_directory()}/Terminal/Levels")
+        else:
+            os.makedirs(f"{values().get_base_directory()}/Terminal")
+
     def get_level(self) -> Level:
 
         def when_list(obj: list) -> list:
