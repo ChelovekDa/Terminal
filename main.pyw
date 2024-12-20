@@ -1,5 +1,6 @@
 import threading
 import time
+import tkinter
 from atexit import register
 import keyboard
 import sys
@@ -54,6 +55,7 @@ class __started():
                     Gate().Game(Gate().get_level()).cmd(MENUs).update_terminal_text(language().__getitem__("on_enter_RecursionError"),"|")
                 Gate().save_level()
                 MENUs.entry.yview_moveto(float("inf"))
+                MENUs.entry.delete("1.0", tkinter.END)
                 time.sleep(1)
             else:
                 time.sleep(0.01)
